@@ -49,20 +49,31 @@ function startKinect() {
           const distance = joints[Kinect2.JointType.spineBase].cameraZ;
           console.log(`User distance: ${distance.toFixed(2)} meters`);
           if(withinCenter){
-            console.log("Within play area");
+            console.log("Start");
+            //console.log("Within play area");
+            //Ring leader: Step right up
             //Entering the start platform
             //No need for feet to be in the center of the platform
             if (distance <= 4.5) {
+              console.log("Staged");
               //console.log("Player active");
               //State: Active
+              //Ring leader: Spot light's on you! Prompt to raise arms
               //Visual Assets: Some audience members look up
               //Sound: General crowd noise
             } 
             //Entering the tight rope
+            //And add a conditon to wait until the audio is done
             if(isTpose){
-              console.log("T Pose");
+              console.log("PreWalk");
+              //State: Walk State
+              //Ring leader: Start walking. Let the show begin
+              //Visual Assets: Tightrope appears
+              //Sound: Audience cheers
+              //console.log("T Pose");
               if (distance <= 4.2 && feetInCenter){
-                console.log("Feet in center");
+                console.log("Walk");
+                //console.log("Feet in center");
                 //console.log("Walking on tightrope");
                 //State: Walk State
                 //Visual Assets: Tightrope appears
@@ -70,56 +81,61 @@ function startKinect() {
               } 
               //Middle of tight rope
               else if (distance <= 2.8 && feetInCenter) {
+                console.log("MiddleSuccessful");
                 //let inPoseState = true;
-                //console.log("Posing");
-                //State: Set Pose State
+                //State: Middle state
+                //Ring leader: Good job!
                 //Visual Assets: Screen change
                 //Sound: ???
               } 
-              else if (distance <= 2.3 && feetInCenter) {
-                //console.log("Walking on tightrope again");
-                //State: Walk State
-                //Visual Assets: Tightrope appears
-                //Sound: Audience cheers
-              } 
+              else if (distance <= 4.2 && !feetInCenter){
+                console.log("Fall");
+              }
               //End of tight rope
-              else if (distance <= 1.4 && feetInCenter) {
+              else if (distance <= 1.4) {
                 if(isUserBowing(joints)){
+                  console.log("EndBow");
                   //console.log("Bowing");
                   //State: End State Bow
                   //Visual Assets: Same as above?
-                  //Sound: Cheering and "take a bow"
+                  //Sound: Cheering
+                }
+                //Add 3 second timer for if they don't bow with an "and" condition
+                else if (!isUserBowing(joints)){
+                  console.log("EndNoBow");
+                  //State: End State Bow
+                  //Visual Assets: Crowd calming down
+                  //Sound: Murmer
                 }
                 else{
+                  console.log("End");
                   //console.log("End of tightrope");
                   //State: End State Off Tightrope
                   //Visual Assets: Crowd cheer/excited
                   //Sound: Cheering
+                  //Ring leader: "Take a bow"
                 }
               }
             }
             else{
-              //Pose state
-              if(inPoseState){
-                //State: Pose State
-                //Visual Assets: Show screen
-                //Sound: ???
-
-                //Add functionality to handle the posing
-              }
-              //If there's just no T Pose
-              else{
                 console.log("No T-Pose");
                 //State: No T-Pose
                 //Visual Assets: ???
                 //Sound: Ring leader asking
-                if(distance <= 4.2){
+                if(distance <= 4.2 && feetInCenter){
+                  console.log("WalkNoTPose");
                   //console.log("No T-Pose and too far");
                   //State: No T-Pose and too far
                   //Visual Assets: ???
-                  //Sound: Ring leader asking where you're going
+                  //Sound: Carefull, keep your arms up
                 }
-              }
+                else if(distance <= 4.2){
+                  console.log("Fall");
+                }
+                else{
+                  console.log("Waiting");
+                  //Ring leader: what are you waiting for?
+                }
             }
           }
           else{
@@ -130,7 +146,6 @@ function startKinect() {
         }
       });
     });
-
     kinect.openBodyReader();
   } else {
     console.log("Kinect not connected!");
