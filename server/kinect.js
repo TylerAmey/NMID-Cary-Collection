@@ -3,40 +3,11 @@ const Kinect2 = require("kinect2");
 const kinect = new Kinect2();
 
 //To see if game is in pose state
-let isPoseState = false;
-
-// Get the user's foot joints
-const footLeft = joints[Kinect2.JointType.footLeft];
-const footRight = joints[Kinect2.JointType.footRight];
-
-// Get the user's spineBase joint
-const spineBase = joints[Kinect2.JointType.spineBase];
-
-// Check if the user is within 3 feet (0.91 meters) from the center of the camera
-const withinCenter = Math.abs(spineBase.cameraX) <= 0.91 && Math.abs(spineBase.cameraY) <= 0.91;
+let inPoseState = false;
 
 function startKinect() {
   if (kinect.open()) {
-
-    // Check if both feet are within the center of the camera
-    const feetInCenter =
-    Math.abs(footLeft.cameraX) <= 0.91 &&
-    Math.abs(footLeft.cameraY) <= 0.91 &&
-    Math.abs(footRight.cameraX) <= 0.91 &&
-    Math.abs(footRight.cameraY) <= 0.91;
-
-    // Check for T-pose gesture
-    const leftHand = joints[Kinect2.JointType.handLeft];
-    const rightHand = joints[Kinect2.JointType.handRight];
-    const leftShoulder = joints[Kinect2.JointType.shoulderLeft];
-    const rightShoulder = joints[Kinect2.JointType.shoulderRight];
-
-    const isTpose =
-      Math.abs(leftHand.cameraY - leftShoulder.cameraY) < 0.2 &&
-      Math.abs(rightHand.cameraY - rightShoulder.cameraY) < 0.2 &&
-      Math.abs(leftHand.cameraX - leftShoulder.cameraX) > 0.5 &&
-      Math.abs(rightHand.cameraX - rightShoulder.cameraX) > 0.5;
-
+  
     console.log("Kinect is open");
 
     kinect.on("bodyFrame", (bodyFrame) => {
@@ -44,6 +15,35 @@ function startKinect() {
       bodyFrame.bodies.forEach((body) => {
         if (body.tracked) {
           const joints = body.joints;
+
+          // Get the user's foot joints
+          const footLeft = joints[Kinect2.JointType.footLeft];
+          const footRight = joints[Kinect2.JointType.footRight];
+
+          // Check if both feet are within the center of the camera
+          const feetInCenter =
+            Math.abs(footLeft.cameraX) <= 0.91 &&
+            Math.abs(footLeft.cameraY) <= 0.91 &&
+            Math.abs(footRight.cameraX) <= 0.91 &&
+            Math.abs(footRight.cameraY) <= 0.91;
+
+            // Check for T-pose gesture
+          const leftHand = joints[Kinect2.JointType.handLeft];
+          const rightHand = joints[Kinect2.JointType.handRight];
+          const leftShoulder = joints[Kinect2.JointType.shoulderLeft];
+          const rightShoulder = joints[Kinect2.JointType.shoulderRight];
+
+          const isTpose =
+            Math.abs(leftHand.cameraY - leftShoulder.cameraY) < 0.2 &&
+            Math.abs(rightHand.cameraY - rightShoulder.cameraY) < 0.2 &&
+            Math.abs(leftHand.cameraX - leftShoulder.cameraX) > 0.5 &&
+            Math.abs(rightHand.cameraX - rightShoulder.cameraX) > 0.5;
+
+          // Get the user's spineBase joint
+          const spineBase = joints[Kinect2.JointType.spineBase];
+
+          // Check if the user is within 3 feet (0.91 meters) from the center of the camera
+          const withinCenter = Math.abs(spineBase.cameraX) <= 0.91 && Math.abs(spineBase.cameraY) <= 0.91;
 
           // Calculate distance from Kinect (spine base Z coordinate)
           const distance = joints[Kinect2.JointType.spineBase].cameraZ;
