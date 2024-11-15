@@ -9,6 +9,8 @@
   "author": "Group 5",
   "license": "UNLICENSED",
   "dependencies": {
-    "kinect2": "^0.3.0"
+    "express": "^4.21.1",
+    "kinect2": "^0.3.0",
+    "socket.io": "^4.8.1"
   }
 }

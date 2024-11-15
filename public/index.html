@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kinect App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    #output {
+      width: 80%;
+      max-width: 600px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      background: white;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kinect App</h1>
+  <div id="output">
+    <h3>Live Feed:</h3>
+    <p id="status">Waiting for data...</p>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById("status");
+
+    const eventSource = new EventSource("/events");
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      statusEl.innerHTML = `
+        <p>User Distance: ${data.distance} meters</p>
+        <p>T-Pose Detected: ${data.tpose ? "Yes" : "No"}</p>
+      `;
+    };
+  </script>
+</body>
+</html>
+
