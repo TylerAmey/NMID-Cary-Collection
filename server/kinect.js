@@ -53,15 +53,17 @@ function startKinect() {
             //Entering the start platform
             //No need for feet to be in the center of the platform
             if (distance <= 4.5) {
-              console.log("Player active");
+              //console.log("Player active");
               //State: Active
               //Visual Assets: Some audience members look up
               //Sound: General crowd noise
             } 
             //Entering the tight rope
             if(isTpose){
+              console.log("T Pose");
               if (distance <= 4.2 && feetInCenter){
-                console.log("Walking on tightrope");
+                console.log("Feet in center");
+                //console.log("Walking on tightrope");
                 //State: Walk State
                 //Visual Assets: Tightrope appears
                 //Sound: Audience cheers
@@ -69,13 +71,13 @@ function startKinect() {
               //Middle of tight rope
               else if (distance <= 2.8 && feetInCenter) {
                 //let inPoseState = true;
-                console.log("Posing");
+                //console.log("Posing");
                 //State: Set Pose State
                 //Visual Assets: Screen change
                 //Sound: ???
               } 
               else if (distance <= 2.3 && feetInCenter) {
-                console.log("Walking on tightrope again");
+                //console.log("Walking on tightrope again");
                 //State: Walk State
                 //Visual Assets: Tightrope appears
                 //Sound: Audience cheers
@@ -83,13 +85,13 @@ function startKinect() {
               //End of tight rope
               else if (distance <= 1.4 && feetInCenter) {
                 if(isUserBowing(joints)){
-                  console.log("Bowing");
+                  //console.log("Bowing");
                   //State: End State Bow
                   //Visual Assets: Same as above?
                   //Sound: Cheering and "take a bow"
                 }
                 else{
-                  console.log("End of tightrope");
+                  //console.log("End of tightrope");
                   //State: End State Off Tightrope
                   //Visual Assets: Crowd cheer/excited
                   //Sound: Cheering
@@ -112,7 +114,7 @@ function startKinect() {
                 //Visual Assets: ???
                 //Sound: Ring leader asking
                 if(distance <= 4.2){
-                  console.log("No T-Pose and too far");
+                  //console.log("No T-Pose and too far");
                   //State: No T-Pose and too far
                   //Visual Assets: ???
                   //Sound: Ring leader asking where you're going
