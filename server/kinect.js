@@ -157,19 +157,12 @@ function isUserBowing(joints) {
   const head = joints[Kinect2.JointType.head];
   const spineMid = joints[Kinect2.JointType.spineMid];
   const spineBase = joints[Kinect2.JointType.spineBase];
-  const handLeft = joints[Kinect2.JointType.handLeft];
-  const handRight = joints[Kinect2.JointType.handRight];
-
+  
   // Calculate the height difference between head and spineMid
   const headToSpineMid = head.cameraY - spineMid.cameraY;
 
   // Calculate the forward bend angle (difference in z-axis)
   const spineBend = spineMid.cameraZ - spineBase.cameraZ;
-
-  // Optional: Check if hands are near the body
-  const handsNearBody =
-    Math.abs(handLeft.cameraX - spineBase.cameraX) < 0.3 &&
-    Math.abs(handRight.cameraX - spineBase.cameraX) < 0.3;
 
   // Thresholds
   const headBendThreshold = -0.2; // Head moves below spineMid
