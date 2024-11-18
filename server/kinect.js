@@ -52,7 +52,7 @@ function startKinect() {
             //Entering the start platform
             //No need for feet to be in the center of the platform
             if (distance <= 4.5) {
-              console.log("Staged");
+              console.log("StepUp");
               //console.log("Player active");
               //State: Active
               //Ring leader: Spot light's on you! Prompt to raise arms
@@ -62,7 +62,7 @@ function startKinect() {
             //Entering the tight rope
             //And add a condition to wait until the audio is done
             if(isTpose){
-              console.log("PreWalk");
+              console.log("ReadyToWalk");
               //State: Walk State
               //Ring leader: Start walking. Let the show begin
               //Visual Assets: Tightrope appears
@@ -78,7 +78,7 @@ function startKinect() {
               } 
               //Middle of tight rope
               else if (distance <= 2.8 && feetInCenter) {
-                console.log("MiddleSuccessful");
+                console.log("MiddleSuccess");
                 //let inPoseState = true;
                 //State: Middle state
                 //Ring leader: Good job!
@@ -88,30 +88,29 @@ function startKinect() {
               else if (distance <= 4.2 && !feetInCenter){
                 console.log("Fall");
               }
-              //End of tight rope
-              else if (distance <= 1.4) {
-                if(isUserBowing(joints)){
-                  console.log("EndBow");
-                  //console.log("Bowing");
-                  //State: End State Bow
-                  //Visual Assets: Same as above?
-                  //Sound: Cheering
-                }
-                //Add 3 second timer for if they don't bow with an "and" condition
-                else if (!isUserBowing(joints)){
-                  console.log("EndNoBow");
-                  //State: End State Bow
-                  //Visual Assets: Crowd calming down
-                  //Sound: Murmur
-                }
-                else{
-                  console.log("End");
-                  //console.log("End of tightrope");
-                  //State: End State Off Tightrope
-                  //Visual Assets: Crowd cheer/excited
-                  //Sound: Cheering
-                  //Ring leader: "Take a bow"
-                }
+            }
+            else if (distance <= 1.4) {
+              if(isUserBowing(joints)){
+                console.log("EndBow");
+                //console.log("Bowing");
+                //State: End State Bow
+                //Visual Assets: Same as above?
+                //Sound: Cheering
+              }
+              //Add 3 second timer for if they don't bow with an "and" condition
+              else if (!isUserBowing(joints)){
+                console.log("EndNoBow");
+                //State: End State Bow
+                //Visual Assets: Crowd calming down
+                //Sound: Murmur
+              }
+              else{
+                console.log("EndWait");
+                //console.log("End of tightrope");
+                //State: End State Off Tightrope
+                //Visual Assets: Crowd cheer/excited
+                //Sound: Cheering
+                //Ring leader: "Take a bow"
               }
             }
             else{
@@ -119,26 +118,20 @@ function startKinect() {
                 //State: No T-Pose
                 //Visual Assets: ???
                 //Sound: Ring leader asking
-                if(distance <= 4.2 && feetInCenter){
-                  console.log("WalkNoTPose");
+                if(distance <= 4.2 && feetInCenter && distance >= 1.4){
+                  console.log("WalkNoT");
                   //console.log("No T-Pose and too far");
                   //State: No T-Pose and too far
                   //Visual Assets: ???
                   //Sound: Careful, keep your arms up
                 }
-                else if(distance <= 4.2){
-                  console.log("Fall");
-                }
                 else{
-                  console.log("Waiting");
-                  //Ring leader: what are you waiting for?
+                  console.log("Fall");
                 }
             }
           }
           else{
-            //State: End State Fall
-            //Visual Assets: Floor rises up and goes to black
-            //Sound: Screams and gasps
+            console.log("Idle");
           }
         }
       });
