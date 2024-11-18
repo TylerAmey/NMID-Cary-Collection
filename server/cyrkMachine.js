@@ -34,6 +34,10 @@ const circusManager = createMachine(
                 // on indicates an action. 
                 on: {
 
+                    startCanvas: {
+                        // call some export function
+                    },
+
                     // toggle is an action. it's sorta a mini function
                     toggle: {
 
@@ -130,9 +134,7 @@ const circusManager = createMachine(
     }
 );
 
-// cyrkService is the value assigned to the 'actor' that is the stateMachine
-// think of it as an object, almost
-const cyrkService = createActor(circusManager);
+
 
 // subscribing to the state service allows the machine to tell
 // us whenever something happens.
@@ -155,6 +157,12 @@ const setCanvasReady = (value) => {
     cyrkService.send({ type: 'setCanvasReady', value });
     cyrkService.send({ type: 'toggle' });
 };
+
+const startMachine = () => {
+    // cyrkService is the value assigned to the 'actor' that is the stateMachine
+    // think of it as an object, almost
+    const cyrkService = createActor(circusManager);
+}
 
 module.exports = {
     setPose,
