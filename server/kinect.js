@@ -2,9 +2,6 @@ const Kinect2 = require("kinect2");
 
 const kinect = new Kinect2();
 
-//To see if game is in pose state
-let inPoseState = false;
-
 function startKinect() {
   if (kinect.open()) {
   
@@ -63,7 +60,7 @@ function startKinect() {
               //Sound: General crowd noise
             } 
             //Entering the tight rope
-            //And add a conditon to wait until the audio is done
+            //And add a condition to wait until the audio is done
             if(isTpose){
               console.log("PreWalk");
               //State: Walk State
@@ -105,7 +102,7 @@ function startKinect() {
                   console.log("EndNoBow");
                   //State: End State Bow
                   //Visual Assets: Crowd calming down
-                  //Sound: Murmer
+                  //Sound: Murmur
                 }
                 else{
                   console.log("End");
@@ -127,7 +124,7 @@ function startKinect() {
                   //console.log("No T-Pose and too far");
                   //State: No T-Pose and too far
                   //Visual Assets: ???
-                  //Sound: Carefull, keep your arms up
+                  //Sound: Careful, keep your arms up
                 }
                 else if(distance <= 4.2){
                   console.log("Fall");
@@ -157,7 +154,7 @@ function isUserBowing(joints) {
   const head = joints[Kinect2.JointType.head];
   const spineMid = joints[Kinect2.JointType.spineMid];
   const spineBase = joints[Kinect2.JointType.spineBase];
-  
+
   // Calculate the height difference between head and spineMid
   const headToSpineMid = head.cameraY - spineMid.cameraY;
 
