@@ -7,6 +7,11 @@ const logVariableStatus = (variableName, value) => {
     console.log(`${variableName} is ${value ? 'true' : 'false'}`);
 };
 
+const informCanvas = (variable) => {
+    console.log(`Play animation/audio related to ${variable}`);
+}
+
+
 // the state machine
 const circusManager = createMachine(
     {
@@ -14,7 +19,7 @@ const circusManager = createMachine(
         id: 'cyrk',
 
         // initial state
-        initial: 'intro',
+        initial: 'start',
 
         // context is just data we keep inside of the machine
         // pose cares about kinect data
@@ -22,6 +27,12 @@ const circusManager = createMachine(
         context: {
             pose: false,
             canvasReady: false,
+            startUp: true,
+            ignoredPoseOnStartup: false,
+            midWay: false,
+            pastMidWay: false,
+            fallen: false,
+            bowed: false,
         },
 
         // list of states.
@@ -29,7 +40,7 @@ const circusManager = createMachine(
         states: {
 
             // this is a state
-            intro: {
+            start: {
 
                 // on indicates an action. 
                 on: {
@@ -45,30 +56,147 @@ const circusManager = createMachine(
                         // anything else in the action can proceed.
                         // the guard is referencing canToggle, which
                         // is near the end of the machine
-                        guard: 'canToggle',
+                        //guard: 'canToggle',
 
                         // target is telling the machine to go to the
                         // next state. 
-                        target: 'idle',
+                        target: 'stepUp',
                     },
                 },
             },
-            idle: {
+
+            // stepUp is a parent state with multiple child states
+            stepUp: {
+
+                // intial state is referred to as stepUpIdle
+                initial: 'stepUpIdle',
+
+                states: {
+
+                    // steupIdle is when the user is stepped up
+                    // when called to toggle, it will look if the user
+                    // has started their t-pose
+                    stepUpIdle: {
+
+                        on: {
+                            toggle: [
+
+                                // these are nested guards. if this first one succeeds,
+                                // the others won't be called.
+                                {
+                                    guard: 'ignoredPose',
+                                    target: 'ready',
+                                },
+                                {
+                                    guard: 'canvasReady',
+                                    target: 'ready',
+                                },
+
+                                {
+                                    guard: 'waitedTooLong',
+                                    target: 'stepUpFailed'
+                                }
+
+                            ],
+                        },
+                    },
+
+                    stepUpFailed: {
+
+                        on: {
+                            toggle: [
+
+                                {
+                                    guard: 'canvasReady',
+                                    target: 'stepUpIdle',
+                                },
+
+                            ],
+                        },
+                    },
+
+                    // ready is a generic state meant to move to the 
+                    // 'onDone' action, which is a fancy way of saying we're
+                    // ready to move onto the next Parent state
+                    ready: {
+                        type: 'final',
+                    }
+                },
+
+                onDone: {
+                    target: 'walking',
+                }
+            },
+
+            walking: {
+
+                entry: {
+                    type: 'checkIfPosing'
+                },
                 on: {
-                    toggle: {
-                        guard: 'canToggle',
-                        target: 'midway',
-                    },
-                },
+
+                    toggle: [
+
+                        {
+                            guard: 'hasFallen',
+                            target: 'falling'
+                        },
+
+
+
+                        {
+                            guard: 'isMidWay',
+                            target: 'midWay',
+                        }
+
+                    ]
+                }
             },
+
             midway: {
                 on: {
                     toggle: {
-                        guard: 'canToggle',
-                        target: 'outro',
+                        guard: 'canvasReady',
+                        target: 'walking',
                     },
                 },
             },
+
+            end: {
+                initial: 'endIdle',
+
+                states: {
+                    endIdle: {
+                        on: {
+                            toggle: {
+
+                                guard: 'canvasReady',
+                                // if bowed, go to endBow, else go to endBowFail
+                            }
+                        }
+
+                    },
+
+                    endBow: {
+                        on: {
+                            
+                        }
+                    },
+
+                    endBowFail: {
+
+                    },
+
+                    ready: {
+                        type: 'final',
+                    }
+
+                },
+                onDone: {
+                    target: 'walking',
+                }
+            },
+
             outro: {
                 on: {
                     toggle: {
@@ -80,10 +208,10 @@ const circusManager = createMachine(
         },
 
         // this generic 'on' is available for all states
-        // we have two actions here, setPose and setCanvasReady
-        // which care about the user pose and the canvas's current
-        // condition (playing audio, looping through sprites, etc.)
+        // thus far they just care about setting the values of some
+        // context
         on: {
+
             setPose: {
                 // actions is a keyword that tells the stateMachine to do something
                 actions: [
@@ -102,6 +230,7 @@ const circusManager = createMachine(
                 ],
 
             },
+
             setCanvasReady: {
                 actions: [
                     assign(({ event }) => {
@@ -110,8 +239,51 @@ const circusManager = createMachine(
                         }
                     }),
 
-                    ({ context }) => logVariableStatus("canvasReady", context.pose),
+                    ({ context }) => logVariableStatus("canvasReady", context.canvasReady),
 
+                ]
+            },
+
+            setFallenState: {
+                actions: [
+                    assign(({ event }) => {
+                        return {
+                            fallen: event.value,
+                        }
+                    }),
+
+                    ({ context }) => logVariableStatus("fallen", context.fallen),
+                ]
+            },
+
+            setBowed: {
+                actions: [
+                    assign(({ event }) => {
+                        return {
+                            bowed: event.value,
+                        }
+                    }),
+
+                    ({ context }) => logVariableStatus("bowed", context.bowed),
+                ]
+            },
+
+            reachedMidway: {
+                actions: [
+                    assign(({ event }) => {
+                        return {
+                            midWay: event.value,
+                        }
+                    }),
+
+                    ({ context }) => logVariableStatus('midWay', context.midWay,)
+                ]
+            },
+
+            checkIfPosing: {
+
+                actions: [
+                    ({ context }) => informCanvas(context.pose),
                 ]
             },
 
@@ -129,22 +301,24 @@ const circusManager = createMachine(
         guards: {
             // guard to check if both pose and canvasReady are true
             // there is an implied return
-            canToggle: ({ context }) => context.pose && context.canvasReady,
+            canvasReady: ({ context }) => context.canvasReady,
+
+            posing: ({ context }) => context.pose,
+
+            hasFallen: ({ context }) => context.fallen,
+
+            hasBowed: ({ context }) => context.hasBowed,
         },
+
+
+
     }
 );
 
 
 
-// subscribing to the state service allows the machine to tell
-// us whenever something happens.
-// we could possibly remove the code
-cyrkService.subscribe((state) => {
-    console.log('State:', state.value);
-});
 
-// start starts it, babyyyyy
-cyrkService.start();
+
 
 // setPose and setCanvasReady are both exported functions that take a value
 // of some sort (a bool for right now, but that can change) and updates the canvas
@@ -158,13 +332,41 @@ const setCanvasReady = (value) => {
     cyrkService.send({ type: 'toggle' });
 };
 
+
+const setBow = (value) => {
+    cyrkService.send({ type: 'setBowed', value });
+    cyrkService.send({ type: 'toggle' });
+
+}
+
+const setFallen = (value) => {
+    cyrkService.send({ type: 'setFallen', value });
+    cyrkService.send({ type: 'toggle' });
+}
+
 const startMachine = () => {
     // cyrkService is the value assigned to the 'actor' that is the stateMachine
     // think of it as an object, almost
     const cyrkService = createActor(circusManager);
+
+    // subscribing to the state service allows the machine to tell
+    // us whenever something happens.
+    // we could possibly remove the code
+    cyrkService.subscribe((state) => {
+        console.log('State:', state.value);
+    });
+
+    // start starts it, babyyyyy
+    cyrkService.start();
+
+    // startCanvas only achievable in starting state, so no worries about a possible overlap
+    cyrkService.send({ type: 'startCanvas' });
 }
 
 module.exports = {
     setPose,
     setCanvasReady,
+    setBow,
+    setFallen,
+    startMachine,
 };
