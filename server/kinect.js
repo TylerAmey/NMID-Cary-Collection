@@ -32,17 +32,6 @@ function startKinect() {
         if (body.tracked) {
           const joints = body.joints;
 
-          // Get the user's foot joints
-          const footLeft = joints[Kinect2.JointType.footLeft];
-          const footRight = joints[Kinect2.JointType.footRight];
-
-          // Check if both feet are within the center of the camera
-          const feetInCenter =
-            Math.abs(footLeft.cameraX) <= 0.91 &&
-            Math.abs(footLeft.cameraY) <= 0.91 &&
-            Math.abs(footRight.cameraX) <= 0.91 &&
-            Math.abs(footRight.cameraY) <= 0.91;
-
             // Check for T-pose gesture
           const leftHand = joints[Kinect2.JointType.handLeft];
           const rightHand = joints[Kinect2.JointType.handRight];
@@ -50,8 +39,8 @@ function startKinect() {
           const rightShoulder = joints[Kinect2.JointType.shoulderRight];
 
           const isTpose =
-            Math.abs(leftHand.cameraY - leftShoulder.cameraY) < 0.2 &&
-            Math.abs(rightHand.cameraY - rightShoulder.cameraY) < 0.2 &&
+            Math.abs(leftHand.cameraY - leftShoulder.cameraY) < 0.5 &&
+            Math.abs(rightHand.cameraY - rightShoulder.cameraY) < 0.5 &&
             Math.abs(leftHand.cameraX - leftShoulder.cameraX) > 0.5 &&
             Math.abs(rightHand.cameraX - rightShoulder.cameraX) > 0.5;
 
@@ -61,14 +50,23 @@ function startKinect() {
           // Check if the user is within 3 feet (0.91 meters) from the center of the camera
           const withinCenter = Math.abs(spineBase.cameraX) <= 0.91 && Math.abs(spineBase.cameraY) <= 0.91;
 
+          const feetInCenter = Math.abs(spineBase.cameraX) <= 0.15 && Math.abs(spineBase.cameraY) <= 0.15;
+
+          // if(feetInCenter){
+          //   console.log("center");
+          // }
+          // else if(withinCenter){
+          //   console.log("within");
+          // }
+
           // Calculate distance from Kinect (spine base Z coordinate)
           const distance = joints[Kinect2.JointType.spineBase].cameraZ;
-          console.log(`User distance: ${distance.toFixed(2)} meters`);
+          //console.log(`User distance: ${distance.toFixed(2)} meters`);
           if(withinCenter){
             //console.log("T pose");
             if(!walkStart){
               currentState = "Start";
-              if (distance <= 4.5) {
+              if (distance <= 5.36) {
                 currentState = "StepUp";
               } 
             }
@@ -76,22 +74,22 @@ function startKinect() {
             //And add a condition to wait until the audio is done
             if(isTpose && !endStateStarted){
               currentState = "ReadyToWalk";
-              if (distance <= 4.2 && feetInCenter){
+              if (distance <= 4.98 && feetInCenter){
                 walkStart = true;
                 currentState = "Walk";
                 //audioFunctions.playAudio('Walk');
               } 
               //Middle of tight rope
-              else if (distance <= 2.8 && feetInCenter) {
+              else if (distance <= 3.09 && feetInCenter) {
                 currentState = "MiddleSuccess";
                 //audioFunctions.playAudio('MiddleSuccesful');
               } 
-              else if (distance <= 4.2 && !feetInCenter){
+              else if (distance <= 4.98 && !feetInCenter){
                 currentState = "Fall";
                 //audioFunctions.playAudio('Fall');
               }
               //End of tight rope
-              else if (distance <= 1.4) {
+              else if (distance <= 1.19) {
                 endStateStarted = true;
                 if(isUserBowing(joints)){
                   //console.log("Bow");
@@ -107,7 +105,7 @@ function startKinect() {
             }
             else if (!endStateStarted){
               //console.log("No T-Pose");
-              if(distance <= 4.2 && feetInCenter && distance >= 1.4){
+              if(distance <= 4.98 && feetInCenter && distance >= 1.19){
                 walkStart = true;
                 currentState = "WalkNoT";
               }
@@ -119,6 +117,8 @@ function startKinect() {
           else{
             currentState = "Idle";
           }
+
+          console.log(currentState);
         }
       });
     });
