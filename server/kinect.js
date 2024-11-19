@@ -54,6 +54,7 @@ function startKinect() {
           const distance = joints[Kinect2.JointType.spineBase].cameraZ;
           //console.log(`User distance: ${distance.toFixed(2)} meters`);
           if(withinCenter){
+            //console.log("T pose");
             currentState = "Start";
             if (distance <= 4.5) {
               currentState = "StepUp";
@@ -76,6 +77,7 @@ function startKinect() {
             else if (distance <= 1.4) {
               endStateStarted = true;
               if(isUserBowing(joints)){
+                console.log("Bow");
                 currentState = "EndBow";
               }
               //else if (!isUserBowing(joints)){
