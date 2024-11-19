@@ -14,6 +14,10 @@ let endStateStarted = false;
 //If user started walking they can't go back
 let walkStart = false;
 
+function getState(){
+  return currentState;
+}
+
 function startKinect() {
   if (kinect.open()) {
   
