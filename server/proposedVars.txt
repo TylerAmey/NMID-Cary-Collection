@@ -1,0 +1,14 @@
+var ringleaderSpeaking = false;
+
+// mp4s
+var endBowAnimation = false;
+var excitedAnimation = false;
+var falleningAudience = false;
+var readyToWalkAudience = false;
+var stepUpAudience = false;
+var walkNoTPoseAudience = false;
+
+proposed use:
+
+if (ringleaderSpeaking) don't try to change states
+if (animmation) don't call that same state

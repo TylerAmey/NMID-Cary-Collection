@@ -1,6 +1,5 @@
 const { createMachine, createActor, assign } = require('xstate');
 
-
 // logVariableStatus
 // function logs the status of variables in the stateMachine for testing purposes
 const logVariableStatus = (variableName, value) => {
@@ -10,7 +9,6 @@ const logVariableStatus = (variableName, value) => {
 const informCanvas = (variable) => {
     console.log(`Play animation/audio related to ${variable}`);
 }
-
 
 // the state machine
 const circusManager = createMachine(

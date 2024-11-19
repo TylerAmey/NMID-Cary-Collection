@@ -9,9 +9,12 @@
   "author": "Group 5",
   "license": "UNLICENSED",
   "dependencies": {
+    "audic": "^3.0.2",
     "express": "^4.21.1",
     "kinect2": "^0.3.0",
+    "node-aplay": "^1.0.3",
     "socket.io": "^4.8.1",
+    "sound-player": "^1.0.13",
     "xstate": "^5.19.0"
   }
 }
