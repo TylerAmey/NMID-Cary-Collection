@@ -43,6 +43,9 @@
         // bool for if audio is already playing
         const audioPlaying = false;
 
+
+
+
         const playAudio = (string) => {
             switch (string) {
                 case 'Idle':
@@ -110,10 +113,74 @@
 
             startUp();
         }
+
+        const endBowA = document.createElement('video');
+        endBowA.src = 'assets/video/EndBowAudience.mp4';
+        endBowA.loop = false;
+
+        const readyToWalkA = document.createElement('video');
+        readyToWalkA.src = 'assets/video/ReadyToWalkAudience.mp4';
+        readyToWalkA.loop = false;
+
+        const startA = document.createElement('video');
+        startA.src = 'assets/video/StartAudience.mp4';
+        startA.loop = false;
+
+        const stepUpA = document.createElement('video');
+        stepUpA.src = 'assets/video/StepUpAudience.mp4';
+        stepUpA.loop = false;
+
+        const walkNoTA = document.createElement('video');
+        walkNoTA.src = 'assets/video/WalkNoTAudience.mp4';
+        walkNoTA.loop = false;
+
         const excitedA = document.createElement('video');
         excitedA.src = 'assets/video/ExcitedAudience.mp4';
         excitedA.loop = true;
 
+        const animate = [endBowA,excitedA,readyToWalkA,startA,stepUpA,walkNoTA];
+        /*
+    const playVideo = (string) => {
+    switch (string) {
+        case 'Idle':
+            (startA)
+            break;
+        case "Start":
+            (startA);
+            break;
+        case "Stepup":
+            (stepUpA);
+            break;
+        case "Walk":
+            (excitedA);
+            (readyToWalkA);
+            break;
+        case "WalkNoTPose":
+            (walkNoTA);
+            break;
+        case "MiddleSuccessful":
+            (excitedA);
+            break;
+        case "EndBow":
+            (excitedA);
+            (endBowA);
+            break;
+        case "EndNoBow":
+            (endBowA);
+            break;
+        case "EndWait":
+            (excitedA);
+            break;
+        case "Fall":
+            (fallingA);
+            break;
+        default:
+            (walkNoTA);
+            break;
+        }       
+    };
+*/
+        const animates = [endBowA,excitedA,readyToWalkA,startA,stepUpA,walkNoTA];
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d', { alpha: false });
         ctx.imageSmoothingEnabled = true;
@@ -122,18 +189,35 @@
         const drawVideoToCanvas = () => {
             if (!excitedA.paused && !excitedA.ended) {
                 ctx.drawImage(excitedA, 0, 0, canvas.width, canvas.height);
+        //for each item in animates
+        animates.forEach(animate => {
+            const drawVideoToCanvas = () => {
+            if (!animate.paused && !animate.ended) {
+                ctx.drawImage(animate, 0, 0, canvas.width, canvas.height);
                 requestAnimationFrame(drawVideoToCanvas);
             }
         };
+                }
+            };
 
         excitedA.addEventListener('play', () => {
             drawVideoToCanvas();
         });
+            animate.addEventListener('play', () => {
+                drawVideoToCanvas();
+            });
 
         excitedA.addEventListener('loadedmetadata', () => {
             canvas.width = excitedA.videoWidth;
             canvas.height = excitedA.videoHeight;
         });
+            animate.addEventListener('loadedmetadata', () => {
+                canvas.width = animate.videoWidth;
+                canvas.height = animate.videoHeight;
+             });
+        })
+        
+        
 
 
         document.getElementById('startButton').addEventListener('click', startUp);
@@ -151,5 +235,3 @@
         };
     </script>
 </body>
-
-</html>
