@@ -60,7 +60,7 @@ const receiveData = (string) => {
             playVideo(endBowA);
             break;
         case "EndNoBow":
-            console.log("No bow at the end - no video to play.");
+            playVideo(endBowA);
             break;
         case "EndWait":
             playVideo(excitedA);
@@ -69,7 +69,7 @@ const receiveData = (string) => {
             playVideo(fallingA);
             break;
         default:
-            console.log("No matching video for the provided string.");
+            playVideo(walkNoTA);
             break;
     }
 };

@@ -1,4 +1,5 @@
 import * as audioFunctions from './audio.js';
+import * as animateFunctions from './animate.js';
 
 const Kinect2 = require("kinect2");
 
@@ -10,6 +11,7 @@ function startKinect() {
     console.log("Kinect is open");
 
     audioFunctions.startUp();
+    animateFunctions.startUp();
 
     kinect.on("bodyFrame", (bodyFrame) => {
       //console.log("Body frame received:", bodyFrame);
@@ -52,6 +54,7 @@ function startKinect() {
           if(withinCenter){
             console.log("Start");
             audioFunctions.playAudio('Start');
+            animateFunctions.playVideo('Start');
             //console.log("Within play area");
             //Ring leader: Step right up
             //Entering the start platform
@@ -59,6 +62,7 @@ function startKinect() {
             if (distance <= 4.5) {
               console.log("Staged");
               audioFunctions.playAudio('Stepup')
+              animateFunctions.playVideo('Stepup');
               //console.log("Player active");
               //State: Active
               //Ring leader: Spot light's on you! Prompt to raise arms
@@ -77,6 +81,7 @@ function startKinect() {
               if (distance <= 4.2 && feetInCenter){
                 console.log("Walk");
                 audioFunctions.playAudio('Walk');
+                animateFunctions.playVideo('Walk');
                 //console.log("Feet in center");
                 //console.log("Walking on tightrope");
                 //State: Walk State
@@ -87,6 +92,7 @@ function startKinect() {
               else if (distance <= 2.8 && feetInCenter) {
                 console.log("MiddleSuccessful");
                 audioFunctions.playAudio('MiddleSuccesful');
+                animateFunctions.playVideo('MiddleSuccesful');
                 //let inPoseState = true;
                 //State: Middle state
                 //Ring leader: Good job!
@@ -96,12 +102,14 @@ function startKinect() {
               else if (distance <= 4.2 && !feetInCenter){
                 console.log("Fall");
                 audioFunctions.playAudio('Fall');
+                animateFunctions.playVideo('Fall');
               }
               //End of tight rope
               else if (distance <= 1.4) {
                 if(isUserBowing(joints)){
                   console.log("EndBow");
                   audioFunctions.playAudio('EndBow');
+                  animateFunctions.playVideo('EndBow');
                   //console.log("Bowing");
                   //State: End State Bow
                   //Visual Assets: Same as above?
@@ -111,6 +119,7 @@ function startKinect() {
                 else if (!isUserBowing(joints)){
                   console.log("EndNoBow");
                   audioFunctions.playAudio('EndNoBow');
+                  animateFunctions.playVideo('EndNoBow');
                   //State: End State Bow
                   //Visual Assets: Crowd calming down
                   //Sound: Murmur
@@ -118,6 +127,7 @@ function startKinect() {
                 else{
                   console.log("End");
                   audioFunctions.playAudio('EndWait');
+                  animateFunctions.playVideo('EndWait');
                   //console.log("End of tightrope");
                   //State: End State Off Tightrope
                   //Visual Assets: Crowd cheer/excited
@@ -134,6 +144,7 @@ function startKinect() {
                 if(distance <= 4.2 && feetInCenter){
                   console.log("WalkNoTPose");
                   audioFunctions.playAudio('WalkNoTPose');
+                  animateFunctions.playVideo('WalkNoTPose');
                   //console.log("No T-Pose and too far");
                   //State: No T-Pose and too far
                   //Visual Assets: ???
@@ -142,9 +153,11 @@ function startKinect() {
                 else if(distance <= 4.2){
                   console.log("Fall");
                   audioFunctions.playAudio('Fall');
+                  animateFunctions.playVideo('Fall');
                 }
                 else{
                   console.log("Waiting");
+                  animateFunctions.playVideo('Start');
                   // not sure if there's an audio function for this
                   //Ring leader: what are you waiting for?
                 }
