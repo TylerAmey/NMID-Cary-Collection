@@ -4,7 +4,6 @@ const kinect = new Kinect2();
 
 let currentState;
 //let tPoseSuccess = true;
-let lastUpdateTime = 0;
 
 //If the user hit the end platform, they can't trigger any prior events
 let endStateStarted = false;
