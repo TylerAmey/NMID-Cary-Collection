@@ -19,7 +19,7 @@ const circusManager = createMachine(
         id: 'cyrk',
 
         // initial state
-        initial: 'start',
+        initial: 'idle',
 
         // context is just data we keep inside of the machine
         // pose cares about kinect data
@@ -27,7 +27,7 @@ const circusManager = createMachine(
         context: {
             pose: false,
             canvasReady: false,
-            startUp: true,
+            startUp: false,
             ignoredPoseOnStartup: false,
             midWay: false,
             pastMidWay: false,
@@ -36,8 +36,18 @@ const circusManager = createMachine(
         },
 
         // list of states.
-        // intro, idle, midway, end
+        // idle, start, stepup, midway, bow, end, outro
         states: {
+
+            idle: {
+            
+                on: {
+                    start: {
+                        target: 'start',
+                    }
+                }
+                
+            },
 
             // this is a state
             start: {
@@ -130,9 +140,10 @@ const circusManager = createMachine(
 
             walking: {
 
-                entry: {
-                    type: 'checkIfPosing'
-                },
+                entry: [
+                    ({ context }) => informCanvas(context.pose),
+                ],
+
                 on: {
 
                     toggle: [
@@ -168,18 +179,35 @@ const circusManager = createMachine(
                 states: {
                     endIdle: {
                         on: {
-                            toggle: {
+                            toggle: [
 
-                                guard: 'canvasReady',
-                                // if bowed, go to endBow, else go to endBowFail
-                            }
+                                {
+                                    guard: 'hasFallen',
+                                    target: 'falling'
+                                },
+
+                                // wait until the canvas is ready to check for bow
+                                // going to endBow is an automatic check;
+                                {
+                                    guard: 'canvasReady',
+                                    target: 'endBow',
+                                }
+                            ]
                         }
 
                     },
 
                     endBow: {
                         on: {
-                            
+                            toggle: [
+                                {
+                                    guard: 'hasBowed',
+                                    target: 'ready',
+                                },
+                                {
+                                    target: 'endBowFail'
+                                }
+                            ]
                         }
                     },
 
@@ -201,7 +229,7 @@ const circusManager = createMachine(
                 on: {
                     toggle: {
                         guard: 'canToggle',
-                        target: 'intro',
+                        target: 'idle',
                     },
                 },
             },
@@ -299,8 +327,8 @@ const circusManager = createMachine(
     {
         // these gaurds are available for all states of the machine
         guards: {
-            // guard to check if both pose and canvasReady are true
-            // there is an implied return
+           
+            //all guards are basically just looking at the context valuess
             canvasReady: ({ context }) => context.canvasReady,
 
             posing: ({ context }) => context.pose,
@@ -309,16 +337,8 @@ const circusManager = createMachine(
 
             hasBowed: ({ context }) => context.hasBowed,
         },
-
-
-
     }
 );
-
-
-
-
-
 
 // setPose and setCanvasReady are both exported functions that take a value
 // of some sort (a bool for right now, but that can change) and updates the canvas
@@ -358,9 +378,6 @@ const startMachine = () => {
 
     // start starts it, babyyyyy
     cyrkService.start();
-
-    // startCanvas only achievable in starting state, so no worries about a possible overlap
-    cyrkService.send({ type: 'startCanvas' });
 }
 
 module.exports = {
