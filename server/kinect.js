@@ -8,6 +8,8 @@ let currentState;
 //If the user hit the end platform, they can't trigger any prior events
 let endStateStarted = false;
 
+let walkStart = false;
+
 function startKinect() {
   if (kinect.open()) {
   
@@ -55,15 +57,18 @@ function startKinect() {
           //console.log(`User distance: ${distance.toFixed(2)} meters`);
           if(withinCenter){
             //console.log("T pose");
-            currentState = "Start";
-            if (distance <= 4.5) {
-              currentState = "StepUp";
-            } 
+            if(!walkStart){
+              currentState = "Start";
+              if (distance <= 4.5) {
+                currentState = "StepUp";
+              } 
+            }
             //Entering the tight rope
             //And add a condition to wait until the audio is done
             if(isTpose && !endStateStarted){
               currentState = "ReadyToWalk";
               if (distance <= 4.2 && feetInCenter){
+                walkStart = true;
                 currentState = "Walk";
               } 
               //Middle of tight rope
@@ -90,6 +95,7 @@ function startKinect() {
             else if (!endStateStarted){
                 //console.log("No T-Pose");
                 if(distance <= 4.2 && feetInCenter && distance >= 1.4){
+                  walkStart = true;
                   currentState = "WalkNoT";
                 }
                 else{
