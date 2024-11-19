@@ -43,6 +43,9 @@
         // bool for if audio is already playing
         const audioPlaying = false;
 
+
+        
+
         const playAudio = (string) => {
             switch (string) {
                 case 'Idle':
@@ -110,6 +113,31 @@
 
             startUp();
         }
+
+        const endBowA = document.createElement('video');
+        endBowA.src = 'assets/video/EndBowAudience.mp4';
+        endBowA.loop = false;
+
+        const excitedA = document.createElement('video');
+        excitedA.src = 'assets/video/ExcitedAudience.mp4';
+        excitedA.loop = false;
+
+        const readyToWalkA = document.createElement('video');
+        readyToWalkA.src = 'assets/video/ReadyToWalkAudience.mp4';
+        readyToWalkA.loop = false;
+
+        const startA = document.createElement('video');
+        startA.src = 'assets/video/StartAudience.mp4';
+        startA.loop = false;
+
+        const stepUpA = document.createElement('video');
+        stepUpA.src = 'assets/video/StepUpAudience.mp4';
+        stepUpA.loop = false;
+
+        const walkNoTA = document.createElement('video');
+        walkNoTA.src = 'assets/video/WalkNoTAudience.mp4';
+        walkNoTA.loop = false;
+
         const excitedA = document.createElement('video');
         excitedA.src = 'assets/video/ExcitedAudience.mp4';
         excitedA.loop = true;
