@@ -118,10 +118,6 @@
         endBowA.src = 'assets/video/EndBowAudience.mp4';
         endBowA.loop = false;
 
-        const excitedA = document.createElement('video');
-        excitedA.src = 'assets/video/ExcitedAudience.mp4';
-        excitedA.loop = false;
-
         const readyToWalkA = document.createElement('video');
         readyToWalkA.src = 'assets/video/ReadyToWalkAudience.mp4';
         readyToWalkA.loop = false;
@@ -142,6 +138,8 @@
         excitedA.src = 'assets/video/ExcitedAudience.mp4';
         excitedA.loop = true;
 
+
+        const animate = [endBowA,excitedA,readyToWalkA,startA,stepupa,walkNoTA];
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d', { alpha: false });
         ctx.imageSmoothingEnabled = true;
