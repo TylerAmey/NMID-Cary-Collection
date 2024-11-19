@@ -9,7 +9,6 @@
   "author": "Group 5",
   "license": "UNLICENSED",
   "dependencies": {
-    "audic": "^3.0.2",
     "express": "^4.21.1",
     "kinect2": "^0.3.0",
     "node-aplay": "^1.0.3",

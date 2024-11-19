@@ -18,7 +18,12 @@ function getState(){
   return currentState;
 }
 
-function startKinect() {
+function startKinect(setState) {
+
+  setTimeout(() => {
+    setState('test string');
+  }, 10000);
+
   if (kinect.open()) {
   
     console.log("Kinect is open");
@@ -30,6 +35,9 @@ function startKinect() {
       //console.log("Body frame received:", bodyFrame);
       bodyFrame.bodies.forEach((body) => {
         if (body.tracked) {
+
+          
+
           const joints = body.joints;
 
           // Get the user's foot joints
@@ -68,6 +76,8 @@ function startKinect() {
             //console.log("T pose");
             if(!walkStart){
               currentState = "Start";
+              setState('Start')
+              // do something 
               if (distance <= 4.5) {
                 currentState = "StepUp";
               } 
