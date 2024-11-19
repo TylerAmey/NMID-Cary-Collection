@@ -110,6 +110,7 @@ function startKinect() {
       });
 
       //Canvas and audio handling
+      
 
     });
     kinect.openBodyReader();
