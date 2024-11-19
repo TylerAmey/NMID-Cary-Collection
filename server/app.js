@@ -8,6 +8,8 @@ const PORT = 3000;
 // Serve static files
 app.use(express.static(path.join(__dirname, "../public")));
 
+app.use('/assets', express.static(path.join(__dirname, '../assets')));
+
 // Start the Kinect tracking
 kinectLogic.startKinect();
 
