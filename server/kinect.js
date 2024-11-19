@@ -1,4 +1,4 @@
-const audioFunctions = require('./audio.js');
+//const audioFunctions = require('./audio.js');
 //const animateFunctions =require('./animate.js');
 
 const Kinect2 = require("kinect2");
@@ -19,7 +19,7 @@ function startKinect() {
   
     console.log("Kinect is open");
 
-    audioFunctions.startUp();
+    //audioFunctions.startUp();
     //animateFunctions.startUp();
 
     kinect.on("bodyFrame", (bodyFrame) => {
@@ -75,16 +75,16 @@ function startKinect() {
               if (distance <= 4.2 && feetInCenter){
                 walkStart = true;
                 currentState = "Walk";
-                audioFunctions.playAudio('Walk');
+                //audioFunctions.playAudio('Walk');
               } 
               //Middle of tight rope
               else if (distance <= 2.8 && feetInCenter) {
                 currentState = "MiddleSuccess";
-                audioFunctions.playAudio('MiddleSuccesful');
+                //audioFunctions.playAudio('MiddleSuccesful');
               } 
               else if (distance <= 4.2 && !feetInCenter){
                 currentState = "Fall";
-                audioFunctions.playAudio('Fall');
+                //audioFunctions.playAudio('Fall');
               }
               //End of tight rope
               else if (distance <= 1.4) {
