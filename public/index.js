@@ -53,7 +53,7 @@ let fallTriggered = false;
 // video elements for canvas
 const endBowA = document.createElement('video');
 endBowA.src = 'assets/video/EndBowAudience.mp4';
-endBowA.loop = true;
+endBowA.loop = false;
 
 const excitedA = document.createElement('video');
 excitedA.src = 'assets/video/ExcitedAudience.mp4';
@@ -61,19 +61,31 @@ excitedA.loop = true;
 
 const readyToWalkA = document.createElement('video');
 readyToWalkA.src = 'assets/video/ReadyToWalkAudience.mp4';
-readyToWalkA.loop = true;
+readyToWalkA.loop = false;
 
 const startA = document.createElement('video');
 startA.src = 'assets/video/StartAudience.mp4';
-startA.loop = true;
+startA.loop = false;
 
 const stepUpA = document.createElement('video');
 stepUpA.src = 'assets/video/StepUpAudience.mp4';
-stepUpA.loop = true;
+stepUpA.loop = false;
 
 const walkNoTA = document.createElement('video');
 walkNoTA.src = 'assets/video/WalkNoTAudience.mp4';
-walkNoTA.loop = true;
+walkNoTA.loop = false;
+
+const idleA = document.createElement('video');
+idleA.src = 'assets/video/IdleAudience.mp4';
+idleA.loop = true;
+
+readyToWalkA.addEventListener('ended', () => {
+    playCanvasVideo(excitedA);
+});
+
+startA.addEventListener('ended', () => {
+    playCanvasVideo(idleA);
+});
 
 // var for current video
 let currentVideo = null; 
@@ -158,11 +170,11 @@ const playAudioAndVideo = (state) => {
                     crowdBackground.play();
 
                 }
-                if (currentVideo !== excitedA) {
+                if (currentVideo !== idleA) {
 
                     // playCanvasVideo already has logic for resetting
                     // stuff
-                    playCanvasVideo(excitedA);
+                    playCanvasVideo(idleA);
                 }
 
                 // set the triggered state to true so it can't be recalled
@@ -186,14 +198,13 @@ const playAudioAndVideo = (state) => {
                     rlIntro.play();
                 }
                 if (currentVideo !== startA) {
-                    console.log('dummy');
                     playCanvasVideo(startA);
                 }
                 startTriggered = true;
             }
             break;
 
-        case "Stepup":
+        case "StepUp":
             if (!stepupTriggered) {
                 if (crowdBackground.paused) {
                     resetAudio();
