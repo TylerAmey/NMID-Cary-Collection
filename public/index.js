@@ -244,7 +244,7 @@ const playAudioAndVideo = (state) => {
             }
             break;
 
-        case "MiddleSuccessful":
+        case "MiddleSuccess":
             if (!middleSuccessfulTriggered) {
                 if (crowdApplause.paused) {
                     resetAudio();

@@ -19,8 +19,13 @@ let gameStart = false;
 //If End Bow state triggered
 let gameEnd = false;
 
-function getState() {
-  return currentState;
+let timeOutNotStarted = true;
+
+let stepupReady = false;
+
+
+function startStepupTimeout(){
+  timeOut
 }
 
 // I added a param, setState, to this function. This is is a function passed in
@@ -53,7 +58,7 @@ function startKinect(setState) {
   // when this occurs, what you'll find is that audio 
   // plays for each respective state. PROVING that there is a trigger
   // occuring.
-  const triggerStatesSequentially = () => {
+ /*  const triggerStatesSequentially = () => {
     states.forEach((state, index) => {
       setTimeout(() => {
         setState(state);
@@ -65,17 +70,19 @@ function startKinect(setState) {
   setTimeout(() => {
     triggerStatesSequentially();
   }, 10000);
-
+ */
   if (kinect.open()) {
 
     console.log("Kinect is open");
 
+    setState('Idle');
 
     kinect.on("bodyFrame", (bodyFrame) => {
       //console.log("Body frame received:", bodyFrame);
       bodyFrame.bodies.forEach((body) => {
         if (body.tracked) {
 
+          //console.log("Body is tracked");
           const joints = body.joints;
 
           // Check for T-pose gesture
@@ -113,39 +120,48 @@ function startKinect(setState) {
           if (withinCenter && !gameEnd) {
             gameStart = true;
             //console.log("T pose");
-            if (!walkStart) {
+            //console.log("Im in center");
+            if (!walkStart && distance <= 8) {
               currentState = "Start";
-              setState('Start')
+              setState('Start');
+              if(timeOutNotStarted) {
+                timeOutNotStarted = true;
+                setTimeout(() => {
+                  stepupReady = true;
+                }, 5000);
+              }
               // do something 
-              if (distance <= 10.72) {
+              if (distance <= 6.5 && stepupReady) {
+                console.log(currentState + ' this should equal start');
                 currentState = "StepUp";
                 setState('StepUp');
               }
             }
             //Entering the tight rope
             //And add a condition to wait until the audio is done
-            if (isTpose) {
+            if (isTpose || endStateStarted) {
               walkStart = true;
               //Never hit
               // if(!endStateStarted && blah blah){
               //   currentState = "ReadyToWalk";
               // }
-              if (distance <= 4.98 && distance >= 3.19 && feetInCenter && !endStateStarted) {
+              if (distance <= 6 && distance >= 3.5 && feetInCenter && !endStateStarted) {
                 currentState = "Walk";
                 setState('Walk');
               }
               //Middle of tight rope
-              else if (distance <= 3.19 && distance >= 1.3 && !endStateStarted) {
+              else if (distance <= 3.5 && distance >= 1.4 && !endStateStarted) {
                 currentState = "MiddleSuccess";
                 setState('MiddleSuccess');
               }
-              else if (distance <= 4.98 && !feetInCenter && !endStateStarted) {
+              else if (distance <= 5.20 && !feetInCenter && !endStateStarted) {
                 currentState = "Fall";
                 setState('Fall');
               }
               //End of tight rope
               else {
                 endStateStarted = true;
+                //console.log(spineBase.cameraY);
                 if (head.cameraY < 0.1) {
                   //console.log("Bow");
                   currentState = "EndBow";
@@ -161,18 +177,18 @@ function startKinect(setState) {
             }
             else if (!endStateStarted && walkStart) {
               //console.log("No T-Pose");
-              if (distance <= 4.98 && feetInCenter && distance >= 2.38) {
+              if (distance <= 5.20 && feetInCenter && distance >= 1.4) {
                 walkStart = true;
                 currentState = "WalkNoT";
                 setState('WalkNoT');
               }
-              else if (distance <= 9.96 && distance >= 2.38) {
+              else if (distance <= 9.96 && distance >= 1.4) {
                 currentState = "Fall";
                 setState('Fall');
               }
             }
           }
-          else if (!gameStart) {
+          else if(!gameEnd && !gameStart){
             currentState = "Idle";
             setState('Idle');
           }
@@ -186,14 +202,5 @@ function startKinect(setState) {
     console.log("Kinect not connected!");
   }
 }
-
-function isHeadBelowShoulders(joints) {
-  const head = joints[Kinect2.JointType.head];
-  const shoulderCenter = joints[Kinect2.JointType.spineShoulder]; // Central shoulder joint
-
-  // Check if the head is below the shoulders
-  return head.cameraY <= shoulderCenter.cameraY;
-}
-
 
 module.exports = { startKinect };
