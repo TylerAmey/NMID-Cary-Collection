@@ -1,3 +1,13 @@
+/* Authors: Andrew Black, Blessing
+ * Since: 11/18/24
+ * Purpose: index.js is the main script to be used with our index.html page
+ * it utilizes socket.io to communicate with kinect.js to get information about
+ * the state of things, which it then uses to play audio and video.
+ * Note that we also believe that the file structure is a bit obtuse - 
+ * We would also much prefer it if much of the functionality was imported in.
+ * We're just running with this spaghetti due to time.
+ */
+
 const socket = io();
 
 // crowd
@@ -40,17 +50,104 @@ let endNoBowTriggered = false;
 let endWaitTriggered = false;
 let fallTriggered = false;
 
-// function for handling audio based off of state
-// plays proper soundbytes with included logic for not overlapping
+// video elements for canvas
+const endBowA = document.createElement('video');
+endBowA.src = 'assets/video/EndBowAudience.mp4';
+endBowA.loop = true;
+
+const excitedA = document.createElement('video');
+excitedA.src = 'assets/video/ExcitedAudience.mp4';
+excitedA.loop = true;
+
+const readyToWalkA = document.createElement('video');
+readyToWalkA.src = 'assets/video/ReadyToWalkAudience.mp4';
+readyToWalkA.loop = true;
+
+const startA = document.createElement('video');
+startA.src = 'assets/video/StartAudience.mp4';
+startA.loop = true;
+
+const stepUpA = document.createElement('video');
+stepUpA.src = 'assets/video/StepUpAudience.mp4';
+stepUpA.loop = true;
+
+const walkNoTA = document.createElement('video');
+walkNoTA.src = 'assets/video/WalkNoTAudience.mp4';
+walkNoTA.loop = true;
+
+// var for current video
+let currentVideo = null; 
+
+// canvas setup
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { alpha: false });
+ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = 'high';
+
+// function is responsible for adjusting the size of the canvas
+// to match that of the video. The reason for this is because otherwise
+// the canvas loads in videos in garbage quality.
+const adjustCanvasDimensions = (video) => {
+    canvas.width = video.videoWidth; 
+    canvas.height = video.videoHeight; 
+    console.log(`Canvas dimensions set to ${canvas.width}x${canvas.height}`);
+};
+
+// function responsible for actually 'drawing' to the canvas
+const drawVideoToCanvas = (video) => {
+    if (!video.paused && !video.ended) {
+
+        // update the canvas dimensions first, then draw
+        adjustCanvasDimensions(video);
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        requestAnimationFrame(() => drawVideoToCanvas(video));
+    }
+};
+
+// calling this plays a video
+const playCanvasVideo = (video) => {
+
+    // first, ensure the video we want to play isn't the currently playing video
+    if (currentVideo !== video) {
+
+        // reset the currentvideo for next time
+        if (currentVideo && !currentVideo.paused) {
+            currentVideo.pause();
+            currentVideo.currentTime = 0; 
+        }
+
+        // update current video
+        currentVideo = video;
+
+        // the next two, ill be honest, chatgpt helped me out with.
+        // i have no idea if both are necessary but im not willing to find out
+        // play the video when the data is loaded in
+        video.onloadeddata = () => {
+            video.play();
+            drawVideoToCanvas(video);
+        };
+
+        // Handle edge cases for videos that are already loaded
+        if (video.readyState >= 3) { // '3' means the video is ready
+            video.play();
+            drawVideoToCanvas(video);
+        }
+    }
+};
+
+// function for handling audio and video based off of state
+// plays proper soundbytes and mp4 with included logic for not overlapping video or
 // Ringleader audio and not playing two crowd audios at once
-const playAudio = (state) => {
+const playAudioAndVideo = (state) => {
     switch (state) {
         case 'Idle':
 
         // check if state isn't triggered yet
             if (!idleTriggered) {
 
-                // then, check if the audio we want to play isn't already playing.
+                // then, check if the audio we want to play isn't already playing
+                // and that the video we want to play isn't already playing
                 // this is mostly for the crowd so it doesn't overlap/sound janky
                 if (crowdBackground.paused) {
 
@@ -59,26 +156,38 @@ const playAudio = (state) => {
 
                     // then play the sound byte we want
                     crowdBackground.play();
+
+                }
+                if (currentVideo !== excitedA) {
+
+                    // playCanvasVideo already has logic for resetting
+                    // stuff
+                    playCanvasVideo(excitedA);
                 }
 
-                // set the state to be true so we don't retrigger the state
+                // set the triggered state to true so it can't be recalled
                 idleTriggered = true;
             }
-
-            // break
             break;
 
-        // other cases simlar to above but also include logic for 
-        // ringleader audio
+        // most cases are like 'Start', with the only difference being
+        // worrying about the ringleader audio which is handled near
+        // identical to the crowd audio
         case "Start":
             if (!startTriggered) {
                 if (crowdBackground.paused) {
                     resetAudio();
                     crowdBackground.play();
                 }
+
+                
                 if (rlIntro.paused) {
                     stopRingleader();
                     rlIntro.play();
+                }
+                if (currentVideo !== startA) {
+                    console.log('dummy');
+                    playCanvasVideo(startA);
                 }
                 startTriggered = true;
             }
@@ -94,6 +203,9 @@ const playAudio = (state) => {
                     stopRingleader();
                     rlStepUp.play();
                 }
+                if (currentVideo !== stepUpA) {
+                    playCanvasVideo(stepUpA);
+                }
                 stepupTriggered = true;
             }
             break;
@@ -108,6 +220,9 @@ const playAudio = (state) => {
                     stopRingleader();
                     rlReadyToWalk.play();
                 }
+                if (currentVideo !== readyToWalkA) {
+                    playCanvasVideo(readyToWalkA);
+                }
                 walkTriggered = true;
             }
             break;
@@ -121,6 +236,9 @@ const playAudio = (state) => {
                 if (rlWalkedUpWithoutPose.paused) {
                     stopRingleader();
                     rlWalkedUpWithoutPose.play();
+                }
+                if (currentVideo !== walkNoTA) {
+                    playCanvasVideo(walkNoTA);
                 }
                 walkNoTPoseTriggered = true;
             }
@@ -149,6 +267,9 @@ const playAudio = (state) => {
                 if (rlEndBow.paused) {
                     stopRingleader();
                     rlEndBow.play();
+                }
+                if (currentVideo !== endBowA) {
+                    playCanvasVideo(endBowA);
                 }
                 endBowTriggered = true;
             }
@@ -194,15 +315,10 @@ const playAudio = (state) => {
             break;
 
         default:
-            console.log("No matching audio for the provided string.");
+            console.log("No matching audio/video for the provided state.");
             break;
     }
 };
-
-
-const startUp = () => {
-    music.play();
-}
 
 // chatgpt wrote these because I was lazy
 const resetAudio = () => {
@@ -219,13 +335,13 @@ const resetAudio = () => {
         audio.currentTime = 0;
     });
 
-    // note we also call startUp.
+    // note we also call startUp. this is incase we shut off the main music,
+    // although it's possible that it's unecessary to call
     startUp();
-}
+};
 
 // stop ringleader audio only. useful to prevent overlap.
 const stopRingleader = () => {
-
     const audios = [rlEndBow, rlEndWait, rlIntro, rlMiddleWalk, rlStepUp,
         rlUserBows, rlWalkedUpWithoutPose, rlReadyToWalk, fall];
 
@@ -233,7 +349,7 @@ const stopRingleader = () => {
         audio.pause();
         audio.currentTime = 0;
     });
-}
+};
 
 // Reset function to clear all states
 const resetStates = () => {
@@ -252,77 +368,31 @@ const resetStates = () => {
 // end of chatGPT written functions I was too lazy to do myself
 // - andrew
 
-const endBowA = document.createElement('video');
-endBowA.src = 'assets/video/EndBowAudience.mp4';
-endBowA.loop = false;
-
-const excitedA = document.createElement('video');
-excitedA.src = 'assets/video/ExcitedAudience.mp4';
-excitedA.loop = false;
-
-const readyToWalkA = document.createElement('video');
-readyToWalkA.src = 'assets/video/ReadyToWalkAudience.mp4';
-readyToWalkA.loop = false;
-
-const startA = document.createElement('video');
-startA.src = 'assets/video/StartAudience.mp4';
-startA.loop = false;
-
-const stepUpA = document.createElement('video');
-stepUpA.src = 'assets/video/StepUpAudience.mp4';
-stepUpA.loop = false;
-
-const walkNoTA = document.createElement('video');
-walkNoTA.src = 'assets/video/WalkNoTAudience.mp4';
-walkNoTA.loop = false;
-
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d', { alpha: false });
-ctx.imageSmoothingEnabled = true;
-ctx.imageSmoothingQuality = 'high';
-
-const drawVideoToCanvas = () => {
-    if (!excitedA.paused && !excitedA.ended) {
-        ctx.drawImage(excitedA, 0, 0, canvas.width, canvas.height);
-        requestAnimationFrame(drawVideoToCanvas);
-    }
-};
-
-excitedA.addEventListener('play', () => {
-    drawVideoToCanvas();
-});
-
-excitedA.addEventListener('loadedmetadata', () => {
-    canvas.width = excitedA.videoWidth;
-    canvas.height = excitedA.videoHeight;
-});
-
-document.getElementById('restart').addEventListener('click', () => {
-    resetAudio();
-    resetStates();
-    console.log('reset stuff');
-});
-
-
 // this is where we want to manage the states.
 // essentially, the socket grabs any emited information.
 // we KNOW it's a String because I programmed it that way in app.js
 // using that, we can call our states from there.
 socket.on('state', state => {
-
     // test log
     console.log(state);
 
-    // startUp called here to play music - but not necessary
-    if (music.paused) {
-        startUp();
+    // call startup function, getting the music to play
+    if (music.paused) startUp();
 
     // call a state
-    } else {
-        playAudio(state);
-    }
-})
+    playAudioAndVideo(state);
+});
 
+// startup plays the main music
+const startUp = () => {
+    music.play();
+}
+
+// Initialize the music (if not already playing)
 window.onload = () => {
-    excitedA.play();
+
+    console.log('onload');
 };
+
+
+
