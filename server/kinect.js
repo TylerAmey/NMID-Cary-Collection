@@ -14,6 +14,12 @@ let endStateStarted = false;
 //If user started walking they can't go back
 let walkStart = false;
 
+//If out of idle
+let gameStart = false;
+
+//If End Bow state triggered
+let gameEnd = false;
+
 function getState(){
   return currentState;
 }
@@ -46,6 +52,8 @@ function startKinect(setState) {
           const leftShoulder = joints[Kinect2.JointType.shoulderLeft];
           const rightShoulder = joints[Kinect2.JointType.shoulderRight];
 
+          const head = joints[Kinect2.JointType.head];
+
           const isTpose =
             Math.abs(leftHand.cameraY - leftShoulder.cameraY) < 0.5 &&
             Math.abs(rightHand.cameraY - rightShoulder.cameraY) < 0.5 &&
@@ -56,9 +64,9 @@ function startKinect(setState) {
           const spineBase = joints[Kinect2.JointType.spineBase];
 
           // Check if the user is within 3 feet (0.91 meters) from the center of the camera
-          const withinCenter = Math.abs(spineBase.cameraX) <= 0.91 && Math.abs(spineBase.cameraY) <= 0.91;
+          const withinCenter = Math.abs(spineBase.cameraX) <= 1.5;
 
-          const feetInCenter = Math.abs(spineBase.cameraX) <= 0.15 && Math.abs(spineBase.cameraY) <= 0.15;
+          const feetInCenter =  Math.abs(spineBase.cameraX) <= 0.25;
 
           // if(feetInCenter){
           //   console.log("center");
@@ -70,61 +78,65 @@ function startKinect(setState) {
           // Calculate distance from Kinect (spine base Z coordinate)
           const distance = joints[Kinect2.JointType.spineBase].cameraZ;
           //console.log(`User distance: ${distance.toFixed(2)} meters`);
-          if(withinCenter){
+          if(withinCenter && !gameEnd){
+            gameStart = true;
             //console.log("T pose");
             if(!walkStart){
               currentState = "Start";
               setState('Start')
               // do something 
-              if (distance <= 5.36) {
+              if (distance <= 10.72) {
                 currentState = "StepUp";
               } 
             }
             //Entering the tight rope
             //And add a condition to wait until the audio is done
-            if(isTpose && !endStateStarted){
-              currentState = "ReadyToWalk";
-              if (distance <= 4.98 && feetInCenter){
-                walkStart = true;
+            if(isTpose){
+              walkStart = true;
+              //Never hit
+              // if(!endStateStarted && blah blah){
+              //   currentState = "ReadyToWalk";
+              // }
+              if (distance <= 4.98 &&  distance >= 3.19 && feetInCenter && !endStateStarted){
                 currentState = "Walk";
                 //audioFunctions.playAudio('Walk');
               } 
               //Middle of tight rope
-              else if (distance <= 3.09 && feetInCenter) {
+              else if (distance <= 3.19 && distance >= 1.3 && !endStateStarted) {
                 currentState = "MiddleSuccess";
                 //audioFunctions.playAudio('MiddleSuccesful');
               } 
-              else if (distance <= 4.98 && !feetInCenter){
+              else if (distance <= 4.98 && !feetInCenter && !endStateStarted){
                 currentState = "Fall";
                 //audioFunctions.playAudio('Fall');
               }
               //End of tight rope
-              else if (distance <= 1.19) {
+              else{
                 endStateStarted = true;
-                if(isUserBowing(joints)){
+                if(head.cameraY < 0.1){
                   //console.log("Bow");
                   currentState = "EndBow";
+                  gameEnd = true;
                 }
-                //else if (!isUserBowing(joints)){
-                  //currentState = "EndNoBow";
-                //}
                 else{
+                  //console.log("End");
                   currentState = "EndWait";
                 }
               }
             }
-            else if (!endStateStarted){
+            else if (!endStateStarted && walkStart){
               //console.log("No T-Pose");
-              if(distance <= 4.98 && feetInCenter && distance >= 1.19){
+              if(distance <= 4.98 && feetInCenter && distance >= 2.38){
                 walkStart = true;
                 currentState = "WalkNoT";
               }
-              else{
+              else if (distance <= 9.96 && distance >= 2.38)
+              {
                 currentState = "Fall";
               }
             }
           }
-          else{
+          else if (!gameStart){
             currentState = "Idle";
           }
 
@@ -138,28 +150,12 @@ function startKinect(setState) {
   }
 }
 
-function isUserBowing(joints) {
-  // Get relevant joints
+function isHeadBelowShoulders(joints) {
   const head = joints[Kinect2.JointType.head];
-  const spineMid = joints[Kinect2.JointType.spineMid];
-  const spineBase = joints[Kinect2.JointType.spineBase];
+  const shoulderCenter = joints[Kinect2.JointType.spineShoulder]; // Central shoulder joint
 
-  // Calculate the height difference between head and spineMid
-  const headToSpineMid = head.cameraY - spineMid.cameraY;
-
-  // Calculate the forward bend angle (difference in z-axis)
-  const spineBend = spineMid.cameraZ - spineBase.cameraZ;
-
-  // Thresholds
-  const headBendThreshold = -0.2; // Head moves below spineMid
-  const spineBendThreshold = 0.15; // SpineMid moves forward compared to SpineBase
-
-  // Determine if the user is bowing
-  return (
-    headToSpineMid < headBendThreshold &&
-    spineBend > spineBendThreshold &&
-    handsNearBody
-  );
+  // Check if the head is below the shoulders
+  return head.cameraY <= shoulderCenter.cameraY;
 }
 
 
