@@ -1,5 +1,4 @@
-//const audioFunctions = require('./audio.js');
-//const animateFunctions =require('./animate.js');
+
 
 const Kinect2 = require("kinect2");
 
@@ -20,33 +19,66 @@ let gameStart = false;
 //If End Bow state triggered
 let gameEnd = false;
 
-function getState(){
+function getState() {
   return currentState;
 }
 
+// I added a param, setState, to this function. This is is a function passed in
+// form app.js that communicates with the server. Anytime setState is called, the
+// server communicates to our webpage. 
+// Therefor, any call of setState is passing a String to the server
+// which can then do some stuff
 function startKinect(setState) {
 
+  // this is test code for the socket. it should be commented out
+  // when we're ready to run
+
+  // list of states recognized by index.js
+  const states = [
+    'Idle',
+    'Start',
+    'Stepup',
+    'Walk',
+    'WalkNoTPose',
+    'MiddleSuccessful',
+    'EndBow',
+    'EndNoBow',
+    'EndWait',
+    'Fall',
+  ];
+
+  // this is the main thing that proves the socket works.
+  // what this does is call setState, with a state - which is 
+  // then sent to the server and recieved by index.js
+  // when this occurs, what you'll find is that audio 
+  // plays for each respective state. PROVING that there is a trigger
+  // occuring.
+  const triggerStatesSequentially = () => {
+    states.forEach((state, index) => {
+      setTimeout(() => {
+        setState(state);
+      }, index * 1000); 
+    });
+  };
+
+  // calls the above function after ten seconds
   setTimeout(() => {
-    setState('test string');
+    triggerStatesSequentially();
   }, 10000);
 
   if (kinect.open()) {
-  
+
     console.log("Kinect is open");
 
-    //audioFunctions.startUp();
-    //animateFunctions.startUp();
 
     kinect.on("bodyFrame", (bodyFrame) => {
       //console.log("Body frame received:", bodyFrame);
       bodyFrame.bodies.forEach((body) => {
         if (body.tracked) {
 
-          
-
           const joints = body.joints;
 
-            // Check for T-pose gesture
+          // Check for T-pose gesture
           const leftHand = joints[Kinect2.JointType.handLeft];
           const rightHand = joints[Kinect2.JointType.handRight];
           const leftShoulder = joints[Kinect2.JointType.shoulderLeft];
@@ -66,7 +98,7 @@ function startKinect(setState) {
           // Check if the user is within 3 feet (0.91 meters) from the center of the camera
           const withinCenter = Math.abs(spineBase.cameraX) <= 1.5;
 
-          const feetInCenter =  Math.abs(spineBase.cameraX) <= 0.25;
+          const feetInCenter = Math.abs(spineBase.cameraX) <= 0.25;
 
           // if(feetInCenter){
           //   console.log("center");
@@ -78,66 +110,71 @@ function startKinect(setState) {
           // Calculate distance from Kinect (spine base Z coordinate)
           const distance = joints[Kinect2.JointType.spineBase].cameraZ;
           //console.log(`User distance: ${distance.toFixed(2)} meters`);
-          if(withinCenter && !gameEnd){
+          if (withinCenter && !gameEnd) {
             gameStart = true;
             //console.log("T pose");
-            if(!walkStart){
+            if (!walkStart) {
               currentState = "Start";
               setState('Start')
               // do something 
               if (distance <= 10.72) {
                 currentState = "StepUp";
-              } 
+                setState('StepUp');
+              }
             }
             //Entering the tight rope
             //And add a condition to wait until the audio is done
-            if(isTpose){
+            if (isTpose) {
               walkStart = true;
               //Never hit
               // if(!endStateStarted && blah blah){
               //   currentState = "ReadyToWalk";
               // }
-              if (distance <= 4.98 &&  distance >= 3.19 && feetInCenter && !endStateStarted){
+              if (distance <= 4.98 && distance >= 3.19 && feetInCenter && !endStateStarted) {
                 currentState = "Walk";
-                //audioFunctions.playAudio('Walk');
-              } 
+                setState('Walk');
+              }
               //Middle of tight rope
               else if (distance <= 3.19 && distance >= 1.3 && !endStateStarted) {
                 currentState = "MiddleSuccess";
-                //audioFunctions.playAudio('MiddleSuccesful');
-              } 
-              else if (distance <= 4.98 && !feetInCenter && !endStateStarted){
+                setState('MiddleSuccess');
+              }
+              else if (distance <= 4.98 && !feetInCenter && !endStateStarted) {
                 currentState = "Fall";
-                //audioFunctions.playAudio('Fall');
+                setState('Fall');
               }
               //End of tight rope
-              else{
+              else {
                 endStateStarted = true;
-                if(head.cameraY < 0.1){
+                if (head.cameraY < 0.1) {
                   //console.log("Bow");
                   currentState = "EndBow";
+                  setState('EndBow');
                   gameEnd = true;
                 }
-                else{
+                else {
                   //console.log("End");
                   currentState = "EndWait";
+                  setState('EndWait');
                 }
               }
             }
-            else if (!endStateStarted && walkStart){
+            else if (!endStateStarted && walkStart) {
               //console.log("No T-Pose");
-              if(distance <= 4.98 && feetInCenter && distance >= 2.38){
+              if (distance <= 4.98 && feetInCenter && distance >= 2.38) {
                 walkStart = true;
                 currentState = "WalkNoT";
+                setState('WalkNoT');
               }
-              else if (distance <= 9.96 && distance >= 2.38)
-              {
+              else if (distance <= 9.96 && distance >= 2.38) {
                 currentState = "Fall";
+                setState('Fall');
               }
             }
           }
-          else if (!gameStart){
+          else if (!gameStart) {
             currentState = "Idle";
+            setState('Idle');
           }
 
           console.log(currentState);

@@ -3,12 +3,15 @@ const socket = io();
 // crowd
 const crowdYell = new Audio('assets/sound/crowd effects/audience yelling.mp3');
 const crowdApplause = new Audio('assets/sound/crowd effects/crowd applause.mp3');
+crowdApplause.volume = .3;
 const crowdBackground = new Audio('assets/sound/crowd effects/crowd bg noise.mp3');
 const crowdBoos = new Audio('assets/sound/crowd effects/crowd boos.mp3');
+crowdBoos.volume = .3;
 
 // music
 const music = new Audio('/assets/sound/music/circus music.mp3');
 music.loop = true;
+music.volume = .3;
 
 // ringleader
 const rlEndBow = new Audio('assets/sound/ringleader/EndBow.mp3');
@@ -25,65 +28,188 @@ const fall = new Audio('assets/sound/ringleader/Fall.mp3');
 // bool for if audio is already playing
 const audioPlaying = false;
 
+// state variables
+let idleTriggered = false;
+let startTriggered = false;
+let stepupTriggered = false;
+let walkTriggered = false;
+let walkNoTPoseTriggered = false;
+let middleSuccessfulTriggered = false;
+let endBowTriggered = false;
+let endNoBowTriggered = false;
+let endWaitTriggered = false;
+let fallTriggered = false;
 
-
-
-const playAudio = (string) => {
-    switch (string) {
+// function for handling audio based off of state
+// plays proper soundbytes with included logic for not overlapping
+// Ringleader audio and not playing two crowd audios at once
+const playAudio = (state) => {
+    switch (state) {
         case 'Idle':
-            if (crowdBackground.paused) crowdBackground.play();
+
+        // check if state isn't triggered yet
+            if (!idleTriggered) {
+
+                // then, check if the audio we want to play isn't already playing.
+                // this is mostly for the crowd so it doesn't overlap/sound janky
+                if (crowdBackground.paused) {
+
+                    // call resetAudio to pause everything.
+                    resetAudio();
+
+                    // then play the sound byte we want
+                    crowdBackground.play();
+                }
+
+                // set the state to be true so we don't retrigger the state
+                idleTriggered = true;
+            }
+
+            // break
             break;
+
+        // other cases simlar to above but also include logic for 
+        // ringleader audio
         case "Start":
-            if (crowdBackground.paused) crowdBackground.play();
-            if (rlIntro.paused) rlIntro.play();
+            if (!startTriggered) {
+                if (crowdBackground.paused) {
+                    resetAudio();
+                    crowdBackground.play();
+                }
+                if (rlIntro.paused) {
+                    stopRingleader();
+                    rlIntro.play();
+                }
+                startTriggered = true;
+            }
             break;
+
         case "Stepup":
-            if (crowdBackground.paused) crowdBackground.play();
-            rlStepUp.play();
+            if (!stepupTriggered) {
+                if (crowdBackground.paused) {
+                    resetAudio();
+                    crowdBackground.play();
+                }
+                if (rlStepUp.paused) {
+                    stopRingleader();
+                    rlStepUp.play();
+                }
+                stepupTriggered = true;
+            }
             break;
+
         case "Walk":
-            if (crowdApplause.paused) crowdApplause.play();
-            if (rlReadyToWalk.paused) rlReadyToWalk.play();
+            if (!walkTriggered) {
+                if (crowdApplause.paused) {
+                    resetAudio();
+                    crowdApplause.play();
+                }
+                if (rlReadyToWalk.paused) {
+                    stopRingleader();
+                    rlReadyToWalk.play();
+                }
+                walkTriggered = true;
+            }
             break;
+
         case "WalkNoTPose":
-            if (crowdBoos.paused) crowdBoos.play();
-            if (rlWalkedUpWithoutPose.paused) rlWalkedUpWithoutPose.play();
+            if (!walkNoTPoseTriggered) {
+                if (crowdBoos.paused) {
+                    resetAudio();
+                    crowdBoos.play();
+                }
+                if (rlWalkedUpWithoutPose.paused) {
+                    stopRingleader();
+                    rlWalkedUpWithoutPose.play();
+                }
+                walkNoTPoseTriggered = true;
+            }
             break;
+
         case "MiddleSuccessful":
-            if (crowdApplause.paused) crowdApplause.play();
-            if (rlMiddleWalk.paused) rlMiddleWalk.play();
+            if (!middleSuccessfulTriggered) {
+                if (crowdApplause.paused) {
+                    resetAudio();
+                    crowdApplause.play();
+                }
+                if (rlMiddleWalk.paused) {
+                    stopRingleader();
+                    rlMiddleWalk.play();
+                }
+                middleSuccessfulTriggered = true;
+            }
             break;
+
         case "EndBow":
-            if (crowdApplause.paused) crowdApplause.play();
-            if (rlEndBow.paused) rlEndBow.play();
+            if (!endBowTriggered) {
+                if (crowdApplause.paused) {
+                    resetAudio();
+                    crowdApplause.play();
+                }
+                if (rlEndBow.paused) {
+                    stopRingleader();
+                    rlEndBow.play();
+                }
+                endBowTriggered = true;
+            }
             break;
+
         case "EndNoBow":
-            if (crowdBoos.paused) crowdBoos.play();
+            if (!endNoBowTriggered) {
+                if (crowdBoos.paused) {
+                    resetAudio();
+                    crowdBoos.play();
+                }
+                endNoBowTriggered = true;
+            }
             break;
+
         case "EndWait":
-            if (crowdApplause.paused) crowdApplause.play();
-            if (rlEndWait.paused) rlEndWait.play();
+            if (!endWaitTriggered) {
+                if (crowdApplause.paused) {
+                    resetAudio();
+                    crowdApplause.play();
+                }
+                if (rlEndWait.paused) {
+                    stopRingleader();
+                    rlEndWait.play();
+                }
+                endWaitTriggered = true;
+            }
             break;
+
         case "Fall":
-            crowdBoos.currentTime = 0;
-            if (crowdBoos.paused) crowdBoos.play();
-            if (fall.paused) fall.play();
+            if (!fallTriggered) {
+                resetAudio();
+                crowdBoos.currentTime = 0;
+                if (crowdBoos.paused) {
+                    crowdBoos.play();
+                }
+                if (fall.paused) {
+                    stopRingleader();
+                    fall.play();
+                }
+                fallTriggered = true;
+            }
             break;
+
         default:
             console.log("No matching audio for the provided string.");
             break;
     }
-}
+};
+
+
 const startUp = () => {
     music.play();
 }
 
-// chatgpt wrote this rofl
+// chatgpt wrote these because I was lazy
 const resetAudio = () => {
     // List of all audio objects to reset
     const audios = [
         crowdYell, crowdApplause, crowdBackground, crowdBoos,
-        music, rlEndBow, rlEndWait, rlIntro, rlMiddleWalk, rlStepUp,
+        rlEndBow, rlEndWait, rlIntro, rlMiddleWalk, rlStepUp,
         rlUserBows, rlWalkedUpWithoutPose, rlReadyToWalk, fall
     ];
 
@@ -93,8 +219,38 @@ const resetAudio = () => {
         audio.currentTime = 0;
     });
 
+    // note we also call startUp.
     startUp();
 }
+
+// stop ringleader audio only. useful to prevent overlap.
+const stopRingleader = () => {
+
+    const audios = [rlEndBow, rlEndWait, rlIntro, rlMiddleWalk, rlStepUp,
+        rlUserBows, rlWalkedUpWithoutPose, rlReadyToWalk, fall];
+
+    audios.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+    });
+}
+
+// Reset function to clear all states
+const resetStates = () => {
+    idleTriggered = false;
+    startTriggered = false;
+    stepupTriggered = false;
+    walkTriggered = false;
+    walkNoTPoseTriggered = false;
+    middleSuccessfulTriggered = false;
+    endBowTriggered = false;
+    endNoBowTriggered = false;
+    endWaitTriggered = false;
+    fallTriggered = false;
+};
+
+// end of chatGPT written functions I was too lazy to do myself
+// - andrew
 
 const endBowA = document.createElement('video');
 endBowA.src = 'assets/video/EndBowAudience.mp4';
@@ -141,27 +297,31 @@ excitedA.addEventListener('loadedmetadata', () => {
     canvas.height = excitedA.videoHeight;
 });
 
-document.getElementById('startButton').addEventListener('click', startUp);
-document.getElementById('stepUp').addEventListener('click', () => {
-    playAudio('Stepup');
+document.getElementById('restart').addEventListener('click', () => {
+    resetAudio();
+    resetStates();
+    console.log('reset stuff');
 });
 
-let counter = 0;
 
-// this is where we want to manage the states
+// this is where we want to manage the states.
+// essentially, the socket grabs any emited information.
+// we KNOW it's a String because I programmed it that way in app.js
+// using that, we can call our states from there.
 socket.on('state', state => {
 
+    // test log
     console.log(state);
-    counter++;
 
-    /* if(counter == 1){
-        playAudio('Idle');
-    } */
-   startUp();
+    // startUp called here to play music - but not necessary
+    if (music.paused) {
+        startUp();
+
+    // call a state
+    } else {
+        playAudio(state);
+    }
 })
-
-// <script src="/socket.io/socket.io.js"></script>
-// <script src="index.js"></script>
 
 window.onload = () => {
     excitedA.play();
