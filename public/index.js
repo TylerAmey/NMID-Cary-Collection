@@ -58,6 +58,7 @@ endBowA.loop = false;
 const excitedA = document.createElement('video');
 excitedA.src = 'assets/video/ExcitedAudience.mp4';
 excitedA.loop = true;
+excitedA.preload = 'auto';
 
 const readyToWalkA = document.createElement('video');
 readyToWalkA.src = 'assets/video/ReadyToWalkAudience.mp4';
@@ -78,18 +79,24 @@ walkNoTA.loop = false;
 const idleA = document.createElement('video');
 idleA.src = 'assets/video/IdleAudience.mp4';
 idleA.loop = true;
+idleA.preload = 'auto';
 
 const fallA = document.createElement('video');
 fallA.src = 'assets/video/FallingAudience.mp4';
 fallA.loop = false;
 
-readyToWalkA.addEventListener('ended', () => {
-    playCanvasVideo(excitedA);
+readyToWalkA.addEventListener('timeupdate', () => {
+    if (readyToWalkA.duration - readyToWalkA.currentTime < .1) {
+        playCanvasVideo(excitedA);
+    }
 });
 
-startA.addEventListener('ended', () => {
-    playCanvasVideo(idleA);
+startA.addEventListener('timeupdate', () => {
+    if (startA.duration - startA.currentTime < .1) {
+        playCanvasVideo(idleA);
+    }
 });
+
 
 // var for current video
 let currentVideo = null;
@@ -204,6 +211,7 @@ const playAudioAndVideo = (state) => {
                 if (currentVideo !== startA) {
                     playCanvasVideo(startA);
                 }
+
                 startTriggered = true;
             }
             break;
@@ -290,7 +298,7 @@ const playAudioAndVideo = (state) => {
                 setTimeout(() => {
                     stopAudio();
                 }, 4000);
-                
+
                 endBowTriggered = true;
             }
             break;
@@ -338,7 +346,7 @@ const playAudioAndVideo = (state) => {
                     fall.play();
                 }
 
-                if(currentVideo != fallA){
+                if (currentVideo != fallA) {
                     playCanvasVideo(fallA);
                 }
                 fallTriggered = true;
@@ -376,6 +384,9 @@ const stopAudio = () => {
         audio.pause();
         audio.currentTime = 0;
     });
+
+    music.pause();
+    music.currentTime = 0;
 
     audioStopped = true;
 
