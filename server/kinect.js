@@ -128,7 +128,7 @@ function startKinect(setState) {
                 timeOutNotStarted = true;
                 setTimeout(() => {
                   stepupReady = true;
-                }, 5000);
+                }, 7000);
               }
               // do something 
               if (distance <= 6.5 && stepupReady) {

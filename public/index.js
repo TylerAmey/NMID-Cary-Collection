@@ -218,8 +218,8 @@ const playAudioAndVideo = (state) => {
                     stopRingleader();
                     rlStepUp.play();
                 }
-                if (currentVideo !== stepUpA) {
-                    playCanvasVideo(stepUpA);
+                if (currentVideo !== idleA) {
+                    playCanvasVideo(idleA);
                 }
                 stepupTriggered = true;
             }
@@ -336,6 +336,10 @@ const playAudioAndVideo = (state) => {
                 if (fall.paused) {
                     stopRingleader();
                     fall.play();
+                }
+
+                if(currentVideo != fallA){
+                    playCanvasVideo(fallA);
                 }
                 fallTriggered = true;
 
