@@ -79,6 +79,10 @@ const idleA = document.createElement('video');
 idleA.src = 'assets/video/IdleAudience.mp4';
 idleA.loop = true;
 
+const fallA = document.createElement('video');
+fallA.src = 'assets/video/FallingAudience.mp4';
+fallA.loop = false;
+
 readyToWalkA.addEventListener('ended', () => {
     playCanvasVideo(excitedA);
 });
@@ -88,7 +92,7 @@ startA.addEventListener('ended', () => {
 });
 
 // var for current video
-let currentVideo = null; 
+let currentVideo = null;
 
 // canvas setup
 const canvas = document.getElementById('canvas');
@@ -100,8 +104,8 @@ ctx.imageSmoothingQuality = 'high';
 // to match that of the video. The reason for this is because otherwise
 // the canvas loads in videos in garbage quality.
 const adjustCanvasDimensions = (video) => {
-    canvas.width = video.videoWidth; 
-    canvas.height = video.videoHeight; 
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     console.log(`Canvas dimensions set to ${canvas.width}x${canvas.height}`);
 };
 
@@ -126,7 +130,7 @@ const playCanvasVideo = (video) => {
         // reset the currentvideo for next time
         if (currentVideo && !currentVideo.paused) {
             currentVideo.pause();
-            currentVideo.currentTime = 0; 
+            currentVideo.currentTime = 0;
         }
 
         // update current video
@@ -155,7 +159,7 @@ const playAudioAndVideo = (state) => {
     switch (state) {
         case 'Idle':
 
-        // check if state isn't triggered yet
+            // check if state isn't triggered yet
             if (!idleTriggered) {
 
                 // then, check if the audio we want to play isn't already playing
@@ -192,7 +196,7 @@ const playAudioAndVideo = (state) => {
                     crowdBackground.play();
                 }
 
-                
+
                 if (rlIntro.paused) {
                     stopRingleader();
                     rlIntro.play();
@@ -282,6 +286,11 @@ const playAudioAndVideo = (state) => {
                 if (currentVideo !== endBowA) {
                     playCanvasVideo(endBowA);
                 }
+
+                setTimeout(() => {
+                    stopAudio();
+                }, 4000);
+                
                 endBowTriggered = true;
             }
             break;
@@ -292,7 +301,14 @@ const playAudioAndVideo = (state) => {
                     resetAudio();
                     crowdBoos.play();
                 }
+                if (currentVideo !== endBowA) {
+                    playCanvasVideo(endBowA);
+                }
+
                 endNoBowTriggered = true;
+                setTimeout(() => {
+                    stopAudio();
+                }, 5000);
             }
             break;
 
@@ -322,6 +338,10 @@ const playAudioAndVideo = (state) => {
                     fall.play();
                 }
                 fallTriggered = true;
+
+                setTimeout(() => {
+                    stopAudio();
+                }, 14000);
             }
             break;
 
@@ -331,14 +351,35 @@ const playAudioAndVideo = (state) => {
     }
 };
 
-// chatgpt wrote these because I was lazy
+// Array of all audio objects for next two functions
+const audios = [
+    crowdYell, crowdApplause, crowdBackground, crowdBoos,
+    rlEndBow, rlEndWait, rlIntro, rlMiddleWalk, rlStepUp,
+    rlUserBows, rlWalkedUpWithoutPose, rlReadyToWalk, fall
+];
+
+// variable is used when trying to play the main music
+// in our socket.on function. In short, this is only set
+// true in the next function, stopAudio, which is only called 
+// when the program should be finished
+let audioStopped = false;
+
+// stop the audio, entirely.
+const stopAudio = () => {
+
+    // Loop through each audio object and reset its position
+    audios.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+    });
+
+    audioStopped = true;
+
+}
+
+// chatgpt wrote these because I was lazy-
+// reset all audio back to their start time.
 const resetAudio = () => {
-    // List of all audio objects to reset
-    const audios = [
-        crowdYell, crowdApplause, crowdBackground, crowdBoos,
-        rlEndBow, rlEndWait, rlIntro, rlMiddleWalk, rlStepUp,
-        rlUserBows, rlWalkedUpWithoutPose, rlReadyToWalk, fall
-    ];
 
     // Loop through each audio object and reset its position
     audios.forEach(audio => {
@@ -388,7 +429,7 @@ socket.on('state', state => {
     console.log(state);
 
     // call startup function, getting the music to play
-    if (music.paused) startUp();
+    if (music.paused && !audioStopped) startUp();
 
     // call a state
     playAudioAndVideo(state);
